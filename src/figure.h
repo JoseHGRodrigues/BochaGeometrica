@@ -15,20 +15,24 @@ Figure figureInit(int shape);
 void figureFree(Figure f);
 
 /*
- * id: integer greater than zero that identifies a geometric shape
- * x, y: coordinates of a 2d plane
- * colorB: hex code of the figure border color
- * colorF: hex code of the figure fill color
- * r: radius of the circle
- * w, h:
- * anchor:
- *  i:
- *  m:
- *  f:
- * txt:
- * fFamily:
- * fWeight:
- *   fSize:
+ * id: integer greater than zero that identifies a geometric shape.
+ * x, y: coordinates of a 2d plane.
+ * colorB: hex code of the figure border color.
+ * colorF: hex code of the figure fill color.
+ * r: radius of the circle.
+ * w, h: weight and height of the Rectangle.
+ * anchor: specific coordinate used as a reference for text positioning.
+ *  i: at the beggining of the text.
+ *  m: at the the middle of the text.
+ *  f: at the end of the text.
+ * txt: The text to be displayed.
+ * fFamily: Font family
+ * fWeight: style of the de font.
+ *  n: normal.
+ *  b: bold.
+ *  b+: bolder.
+ *  l: lighter.
+ * fSize: Font size.
  */
 void setCircle(Figure f, int id, double x, double y, double r,
                const char *colorB, const char *colorF);
