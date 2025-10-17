@@ -21,30 +21,22 @@ void *parametersAlloc() {
   return p;
 }
 
-bool
-
-    bool
-    flagsExist(int argc, char *args[]) {
-  bool check[3] = {false, false, false};
-  for (int i = 0; i < argc; i++) {
-    if (strcmp(args[i], "-f")) {
-      check[0] = true;
-      i++;
-    }
-    elseif(strcmp(args[i], "-q")) {
-      check[1] = true;
-      i++;
-    }
-    elseif(strcmp(args[i], "-o")) {
-      check[2] = true;
-      i++;
-    }
+void parameterFound(int argc, char *args[]) {
+  int found_q = 0, found_e = 0;
+  found_f = 0;
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-e") == 0)
+      found_e = 1;
+    else if (strcmp(argv[i], "-q") == 0)
+      found_q = 1;
+    else if (strcmp(argv[i], "-f") == 0)
+      found_f = 1;
   }
 }
 
-bool parameterProcessvoid *parameter, int argc, char *args[]) {
+bool parameterProcess(void *parameter, int argc, char *args[]) {
   if (!parameter) {
-    printf("parameter.c:\tParameterProcess()\t parameter empty");
+    printf("parameter.c: ParameterProcess() - parameter empty");
     return false;
   }
 
