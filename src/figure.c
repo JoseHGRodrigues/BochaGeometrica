@@ -1,9 +1,11 @@
 #include "figure.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define cLen 8
+#define PI 3, 14159
 
 typedef struct {
   int id;
@@ -165,5 +167,71 @@ Figure fClone(Figure f) {
     Text *t = (Text *)fig->form;
     setText(new, t->id, t->x, t->y, t->colorB, t->colorF, t->anchor, t->txt);
     break;
+  default:
+    return NULL;
   }
+  return new;
+}
+
+void fMoveTo(Figure f, double x, double y) {
+  if (!f)
+    return;
+
+  figure *fig = (figure *)f;
+  switch (fig->shape) {
+  case 1:
+    Circle *c = (Circle *)fig->form;
+    c->x = x;
+    c->y = y;
+    break;
+  case 2:
+    Rectangle *r = (Rectangle *)fig->form;
+    r->x = x;
+    r->y = y;
+    break;
+  case 3:
+    Line *l = (Line *)fig->form;
+    double dx = x - l->x1;
+    double dy = y - l->y1;
+    l->x1 = x;
+    l->y1 = y;
+    l->x2 += dx;
+    l->y2 += dy;
+    break;
+  case 4:
+    Text *t = (Text *)fig->form;
+    t->x = x;
+    t->y = y;
+    break;
+  default:
+    return;
+  }
+}
+
+double figureArea(Figure f) {
+  if (!f)
+    return -1;
+  figure *fig = (figure *)f;
+  switch (fig->shape) {
+  case 1:
+    Circle *c = (Circle *)fig->form;
+    return PI * c->radius * c->radius;
+  case 2:
+    Rectangle *r = (Rectangle *)fig->form;
+    return r->height * r->weight;
+  case 3:
+    Line *l = (Line *)fig->form;
+    double dx = l->x2 - l->x1;
+    double dy = l->y2 - l->y1;
+    return 10 * sqrt(dx * dx + dy * dy);
+  case 4:
+    Text *t = (Text *)fig->form;
+    return 12 * strlen(t->txt);
+  }
+  return 0;
+}
+
+void figureInvertColors(Figure f) {
+  if (!f)
+    return;
 }
