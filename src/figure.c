@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define cLen 8
-#define PI 3, 14159
+#define PI 3.14159
 
 typedef struct {
   int id;
@@ -47,16 +47,16 @@ Figure figureInit(int shape) {
     return NULL;
   f->shape = shape;
   switch (f->shape) {
-  case 1:
+  case CIRCLE:
     f->form = malloc(sizeof(Circle));
     break;
-  case 2:
+  case RECTANGLE:
     f->form = malloc(sizeof(Rectangle));
     break;
-  case 3:
+  case LINE:
     f->form = malloc(sizeof(Line));
     break;
-  case 4:
+  case TEXT:
     f->form = malloc(sizeof(Text));
     break;
   default:
@@ -81,7 +81,7 @@ void figureFree(Figure f) {
 
 void setCircle(Figure f, int id, double x, double y, double r,
                const char *colorB, const char *colorF) {
-  if (!f || ((figure *)f)->shape != 1)
+  if (!f || ((figure *)f)->shape != CIRCLE)
     return;
   Circle *c = (Circle *)((figure *)f)->form;
   c->id = id;
@@ -94,7 +94,7 @@ void setCircle(Figure f, int id, double x, double y, double r,
 
 void setRectangle(Figure f, int id, double x, double y, double w, double h,
                   const char *colorB, const char *colorF) {
-  if (!f || ((figure *)f)->shape != 2)
+  if (!f || ((figure *)f)->shape != RECTANGLE)
     return;
   Rectangle *r = (Rectangle *)((figure *)f)->form;
   r->id = id;
@@ -108,7 +108,7 @@ void setRectangle(Figure f, int id, double x, double y, double w, double h,
 
 void setLine(Figure f, int id, double x1, double y1, double x2, double y2,
              const char *color) {
-  if (!f || ((figure *)f)->shape != 3)
+  if (!f || ((figure *)f)->shape != LINE)
     return;
   Line *l = (Line *)((figure *)f)->form;
   l->id = id;
@@ -141,20 +141,20 @@ Figure fClone(Figure f) {
   if (!new)
     return NULL;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     setCircle(new, c->id, c->x, c->y, c->radius, c->colorB, c->colorF);
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     setRectangle(new, r->id, r->x, r->y, r->weight, r->height, r->colorB,
                  r->colorF);
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     setLine(new, l->id, l->x1, l->y1, l->x2, l->y2, l->color);
     break;
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     setText(new, t->id, t->x, t->y, t->colorB, t->colorF, t->anchor, t->txt);
     break;
@@ -170,17 +170,17 @@ void fMoveTo(Figure f, double x, double y) {
 
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     c->x = x;
     c->y = y;
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     r->x = x;
     r->y = y;
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     double dx = x - l->x1;
     double dy = y - l->y1;
@@ -189,7 +189,7 @@ void fMoveTo(Figure f, double x, double y) {
     l->x2 += dx;
     l->y2 += dy;
     break;
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     t->x = x;
     t->y = y;
@@ -204,38 +204,37 @@ double figureArea(Figure f) {
     return -1;
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     return PI * c->radius * c->radius;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     return r->height * r->weight;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     double dx = l->x2 - l->x1;
     double dy = l->y2 - l->y1;
     return 2 * sqrt(dx * dx + dy * dy);
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     return 20 * strlen(t->txt);
   }
   return 0;
 }
 
-char *getComplementaryColor(const char *hexColor) {
+int getComplementaryColor(const char *hexColor, char *comHex) {
   const char *format = (hexColor[0] == '#') ? hexColor + 1 : hexColor;
   if (strlen(format) != 6)
-    return NULL;
+    return 0;
   unsigned int r, g, b;
   if (sscanf("%02x%02x%02x", &r, &g, &b) != 3)
-    return NULL;
+    return 0;
   unsigned int comR, comG, comB;
   comR = 255 - r;
   comG = 255 - g;
   comB = 255 - b;
-  char comHex[8];
   sprintf(comHex, "#%02x%02x%02x", comR, comG, comB);
-  return comHex;
+  return 1;
 }
 
 void figureInvertColors(Figure f) {
@@ -244,23 +243,26 @@ void figureInvertColors(Figure f) {
   figure *fig = (figure *)f;
   char temp[cLen];
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     strcpy(temp, c->colorB);
     strcpy(c->colorB, c->colorF);
     strcpy(c->colorF, temp);
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
-    strcpy(temp, c->colorB);
-    strcpy(c->colorB, c->colorF);
-    strcpy(c->colorF, temp);
+    strcpy(temp, r->colorB);
+    strcpy(r->colorB, r->colorF);
+    strcpy(r->colorF, temp);
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
-    strcpy(l->color, getComplementaryColor(l->color));
+    char *comHex[cLen];
+    if (getComplementaryColor(l->color, comHex))
+      strcpy(l->color, comHex);
+
     break;
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     strcpy(temp, t->colorB);
     strcpy(t->colorB, t->colorF);
@@ -274,19 +276,19 @@ int getFigureId(Figure f) {
     return -1;
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     return c->id;
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     return r->id;
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     return l->id;
     break;
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     return t->id;
     break;
@@ -299,22 +301,22 @@ void getFigureXY(double *x, double *y, Figure f) {
     return;
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     *x = c->x;
     *y = c->y;
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     *x = c->x;
     *y = c->y;
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     *x = l->x1;
     *y = l->y1;
     break;
-  case 4:
+  case TEXT:
     Text *t = (Text *)fig->form;
     *x = t->x;
     *y = t->y;
@@ -330,25 +332,29 @@ void getFigureColors(Figure f, char *colorB, char *colorF) {
     return;
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     strcpy(colorB, c->colorB);
     strcpy(colorF, c->colorF);
-  case 2:
+    break;
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     strcpy(colorB, r->colorB);
     strcpy(colorF, r->colorF);
-  case 3:
+    break;
+  case LINE:
     Line *l = (Line *)fig->form;
     strcpy(colorB, l->color);
-    strcpy(colorF, '\0');
-  case 4:
+    strcpy(colorF, "");
+    break;
+  case TEXT:
     Text *t = (Text *)fig->form;
     strcpy(colorB, t->colorB);
     strcpy(colorF, t->colorF);
+    break;
   default:
-    strcpy(colorB, '\0');
-    strcpy(colorF, '\0');
+    strcpy(colorB, "");
+    strcpy(colorF, "");
   }
 }
 
@@ -356,7 +362,7 @@ double getCircleR(Figure f) {
   if (!f)
     return 0;
   figure *fig = (figure *)f;
-  if (fig->shape != 1)
+  if (fig->shape != CIRCLE)
     return 0;
   Circle *c = (Circle *)fig->form;
   return c->radius;
@@ -366,7 +372,7 @@ void getRectangleWH(Figure f, double *w, double *h) {
   if (!f)
     return;
   figure *fig = (figure *)f;
-  if (fig->shape != 2)
+  if (fig->shape != RECTANGLE)
     return;
   Rectangle *r = (Rectangle *)fig->form;
   *w = r->weight;
@@ -377,7 +383,7 @@ void getLineP(Figure f, double *x1, double *y1, double *x2, double *y2) {
   if (!f)
     return;
   figure *fig = (figure *)f;
-  if (fig->shape != 3)
+  if (fig->shape != LINE)
     return;
   Line *l = (Line *)fig->form;
   *x1 = l->x1;
@@ -411,23 +417,25 @@ void putFigureColor(Figure f, const char *colorB, const char *colorF) {
     return;
   figure *fig = (figure *)f;
   switch (fig->shape) {
-  case 1:
+  case CIRCLE:
     Circle *c = (Circle *)fig->form;
     strcpy(c->colorB, colorB);
     strcpy(c->colorF, colorF);
     break;
-  case 2:
+  case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
     strcpy(r->colorB, colorB);
     strcpy(r->colorF, colorF);
     break;
-  case 3:
+  case LINE:
     Line *l = (Line *)fig->form;
     strcpy(l->color, colorB);
-  case 4:
+    break;
+  case TEXT:
     Text *t = (Text *)fig->form;
     strcpy(t->colorB, colorB);
     strcpy(t->colorF, colorF);
+    break;
   }
 }
 
