@@ -1,23 +1,71 @@
-//
-
 #ifndef STACK_H
 #define STACK_H
 
-typedef void *ELEMENT;
+#include <stdbool.h> // Para usar os tipos 'true' e 'false'
+#include <stdio.h>
+
+/**
+ * @brief Um tipo opaco para uma pilha (Stack) dinâmica.
+ * A implementação real (struct stack) está escondida em stack.c.
+ */
 typedef void *Stack;
 
-// Function Prototypes
+/**
+ * @brief Aloca e inicializa uma nova pilha vazia.
+ * @return Um ponteiro (Stack) para a nova pilha, ou NULL se a alocação falhar.
+ */
+Stack stackInit();
 
-Stack stackInit(); // Function to initialize the stack
+/**
+ * @brief Liberta toda a memória associada à pilha.
+ * Liberta todos os nós internos da pilha.
+ *
+ * @warning Esta função NÃO liberta a memória dos dados (os ponteiros void*)
+ * que foram empilhados. O utilizador é responsável por esvaziar a pilha
+ * e libertar os dados (se necessário) antes de chamar esta função.
+ *
+ * @param s A pilha a ser libertada.
+ */
+void stackFree(Stack s);
 
-bool stackIsEmpty(Stack *p); // Function to check if the stack is empty
+/**
+ * @brief Adiciona um item (ponteiro) ao topo da pilha.
+ * @param s A pilha.
+ * @param data O ponteiro (void*) para o dado a ser armazenado.
+ * @return 1 em caso de sucesso, 0 se a pilha for NULL ou falhar a alocação
+ * de memória.
+ */
+int stackPush(Stack s, void *data);
 
-void stackIsFull(Stack *p, int len); // Function to check if the stack is full
+/**
+ * @brief Remove e retorna o item (ponteiro) do topo da pilha.
+ * @param s A pilha.
+ * @return O ponteiro (void*) que estava no topo, ou NULL se a pilha
+ * estiver vazia ou for NULL.
+ */
+void *stackPop(Stack s);
 
-int stackLen(STACK *p); // Function to get stack size
+/**
+ * @brief Retorna o item (ponteiro) do topo da pilha SEM o remover.
+ * @param s A pilha.
+ * @return O ponteiro (void*) que está no topo, ou NULL se a pilha
+ * estiver vazia ou for NULL.
+ */
+void *stackTop(Stack s);
 
-int stackPush(STACK *p); // Function to push an element onto the stack
+/**
+ * @brief Verifica se a pilha está vazia.
+ * @param s A pilha.
+ * @return true (verdadeiro) se a pilha estiver vazia ou for NULL,
+ * false (falso) caso contrário.
+ */
+bool stackIsEmpty(Stack s);
 
-int stackPop(STACK *p); // Function to pop an element from the stack
+/**
+ * @brief Obtém o número atual de elementos na pilha.
+ * @param s A pilha.
+ * @return O número de elementos, ou -1 se a pilha for NULL.
+ */
+int stackGetSize(Stack s);
 
 #endif // STACK_H
