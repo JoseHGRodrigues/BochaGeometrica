@@ -34,6 +34,9 @@ typedef struct {
   char colorB[cLen], colorF[cLen];
   char anchor;
   char txt[64];
+  char family[64];
+  char weight[3];
+  int size;
 } Text;
 
 typedef struct {
@@ -120,7 +123,8 @@ void setLine(Figure f, int id, double x1, double y1, double x2, double y2,
 }
 
 void setText(Figure f, int id, double x, double y, const char *colorB,
-             const char *colorF, const char anchor, const char *txt) {
+             const char *colorF, const char anchor, const char *txt,
+             const char *family, const char *weight, int size) {
   if (!f || ((figure *)f)->shape != 4)
     return;
   Text *t = (Text *)((figure *)f)->form;
@@ -131,6 +135,9 @@ void setText(Figure f, int id, double x, double y, const char *colorB,
   strcpy(t->colorB, colorB);
   strcpy(t->colorF, colorF);
   strcpy(t->txt, txt);
+  strcpy(t->family, family);
+  strcpy(t->weight, weight);
+  t->size = size;
 }
 
 Figure fClone(Figure f) {
@@ -156,7 +163,8 @@ Figure fClone(Figure f) {
     break;
   case TEXT:
     Text *t = (Text *)fig->form;
-    setText(new, t->id, t->x, t->y, t->colorB, t->colorF, t->anchor, t->txt);
+    setText(new, t->id, t->x, t->y, t->colorB, t->colorF, t->anchor, t->txt,
+            t->family, t->weight, t->size);
     break;
   default:
     return NULL;
@@ -227,7 +235,7 @@ int getComplementaryColor(const char *hexColor, char *comHex) {
   if (strlen(format) != 6)
     return 0;
   unsigned int r, g, b;
-  if (sscanf("%02x%02x%02x", &r, &g, &b) != 3)
+  if (sscanf(hexColor + 1, "%02x%02x%02x", &r, &g, &b) != 3)
     return 0;
   unsigned int comR, comG, comB;
   comR = 255 - r;
@@ -257,7 +265,7 @@ void figureInvertColors(Figure f) {
     break;
   case LINE:
     Line *l = (Line *)fig->form;
-    char *comHex[cLen];
+    char comHex[cLen];
     if (getComplementaryColor(l->color, comHex))
       strcpy(l->color, comHex);
 
@@ -308,8 +316,8 @@ void getFigureXY(double *x, double *y, Figure f) {
     break;
   case RECTANGLE:
     Rectangle *r = (Rectangle *)fig->form;
-    *x = c->x;
-    *y = c->y;
+    *x = r->x;
+    *y = r->y;
     break;
   case LINE:
     Line *l = (Line *)fig->form;
@@ -392,6 +400,29 @@ void getLineP(Figure f, double *x1, double *y1, double *x2, double *y2) {
   *y2 = l->y2;
 }
 
+void getTextP(Figure f, double *x1, double *y1, double *x2, double *y2) {
+  if (!f)
+    return;
+  figure *fig = (figure *)f;
+  if (fig->shape != 4)
+    return;
+  char anchor = getTextA(f);
+  Text *t = (Text *)fig->form;
+  int len = strlen(t->txt);
+  *y1 = t->y;
+  *y2 = t->y;
+  if (anchor == 'i') {
+    *x1 = t->x;
+    *x2 = t->x + 10 * len;
+  } else if (anchor == 'm') {
+    *x1 = t->x - 10 * len / 2;
+    *x2 = t->x + 10 * len / 2;
+  } else {
+    *x1 = t->x - 10 * len;
+    *x2 = t->x;
+  }
+}
+
 char getTextA(Figure f) {
   if (!f)
     return '\0';
@@ -410,6 +441,36 @@ void getTextTXT(Figure f, char *txt) {
     return;
   Text *t = (Text *)fig->form;
   strcpy(txt, t->txt);
+}
+
+void getTextWgt(Figure f, char *wgt) {
+  if (!f)
+    return;
+  figure *fig = (figure *)f;
+  if (fig->shape != 4)
+    return;
+  Text *t = (Text *)fig->form;
+  strcpy(wgt, t->weight);
+}
+
+void getTextFml(Figure f, char *fml) {
+  if (!f)
+    return;
+  figure *fig = (figure *)f;
+  if (fig->shape != 4)
+    return;
+  Text *t = (Text *)fig->form;
+  strcpy(fml, t->family);
+}
+
+int getTextSize(Figure f) {
+  if (!f)
+    return 0;
+  figure *fig = (figure *)f;
+  if (fig->shape != 4)
+    return 0;
+  Text *t = (Text *)fig->form;
+  return t->size;
 }
 
 void putFigureColor(Figure f, const char *colorB, const char *colorF) {
@@ -442,6 +503,13 @@ void putFigureColor(Figure f, const char *colorB, const char *colorF) {
 int getFigureShape(Figure f) {
   if (!f)
     return 0;
+  figure *fig = (figure *)f;
+  return fig->shape;
+}
+
+int getFigureType(Figure f) {
+  if (!f)
+    return -1;
   figure *fig = (figure *)f;
   return fig->shape;
 }

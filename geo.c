@@ -4,9 +4,22 @@
 #include <string.h>
 
 #include "figure.h"
-#include "list.h"
+#include "queue.h"
 
 #define MAX_LINE_BUFFER 512
+typedef struct {
+  char family[64];
+  char weight[3];
+  int size;
+} Ts;
+
+static Ts *tsInit() {
+  Ts *t = (Ts *)malloc(sizeof(Ts));
+  strcpy(t->family, "Arial");
+  strcpy(t->weight, "n");
+  t->size = 12;
+  return t;
+}
 
 static Figure processCircle(const char *line) {
   int id;
@@ -47,7 +60,7 @@ static Figure processLine(const char *line) {
   return NULL;
 }
 
-static Figure processText(const char *line) {
+static Figure processText(const char *line, Ts *t) {
   int id;
   double x, y;
   char colorB[32], colorF[32];
@@ -56,13 +69,24 @@ static Figure processText(const char *line) {
   if (sscanf(line, "t %d %lf %lf %s %s %c %[^\n]", &id, &x, &y, colorB, colorF,
              &anchor, text) == 7) {
     Figure newFig = figureInit(TEXT);
-    setText(newFig, id, x, y, colorB, colorF, anchor, text);
+    setText(newFig, id, x, y, colorB, colorF, anchor, text, t->family,
+            t->weight, t->size);
     return newFig;
   }
   return NULL;
 }
 
-static void parseGeoLine(char *lineBuffer, List figureList) {
+static void processTs(const char *line, Ts *t) {
+  char family[64], weight[3];
+  int size;
+  if (sscanf(line, "ts %s %s %d", family, weight, &size) != 3)
+    return;
+  strcpy(t->family, family);
+  strcpy(t->weight, weight);
+  t->size = size;
+}
+
+static void parseGeoLine(char *lineBuffer, Queue figureList, Ts *t) {
   char command[16];
   Figure newFig = NULL;
 
@@ -78,19 +102,21 @@ static void parseGeoLine(char *lineBuffer, List figureList) {
   else if (strcmp(command, "l") == 0)
     newFig = processLine(lineBuffer);
   else if (strcmp(command, "t") == 0)
-    newFig = processText(lineBuffer);
-
+    newFig = processText(lineBuffer, t);
+  else if (strcmp(command, "ts") == 0)
+    processTs(command, t);
   if (newFig)
-    listInsertLast(figureList, newFig);
+    queueEnqueue(figureList, newFig);
 }
 
-void processGeoFile(const char *geoFilePath, List figureList) {
+void processGeoFile(const char *geoFilePath, Queue figureList) {
   FILE *file = fopen(geoFilePath, "r");
   if (!file)
     return;
   char line[MAX_LINE_BUFFER];
+  Ts *t = tsInit();
   while (fgets(line, sizeof(line), file)) {
-    parseGeoLine(line, figureList);
+    parseGeoLine(line, figureList, t);
   }
   fclose(file);
 }

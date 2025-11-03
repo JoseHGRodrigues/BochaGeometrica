@@ -1,7 +1,7 @@
 #ifndef GEO_H
 #define GEO_H
 
-#include "list.h" // Este módulo precisa saber o que é 'List'
+#include "queue.h"
 
 /**
  * @brief Processa um arquivo .geo, lendo as figuras e as adicionando
@@ -16,6 +16,6 @@
  * @param figureList A lista (já inicializada com listInit) onde as
  * figuras criadas serão armazenadas.
  */
-void processGeoFile(const char *geoFilePath, List figureList);
+void processGeoFile(const char *geoFilePath, Queue figureList);
 
 #endif // GEO_H

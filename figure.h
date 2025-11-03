@@ -80,7 +80,8 @@ void setLine(Figure f, int id, double x1, double y1, double x2, double y2,
  * @param txt O conteúdo do texto.
  */
 void setText(Figure f, int id, double x, double y, const char *colorB,
-             const char *colorF, const char anchor, const char *txt);
+             const char *colorF, const char anchor, const char *txt,
+             const char *family, const char *weight, int size);
 
 /**
  * @brief Cria e retorna um clone (cópia profunda) de uma figura.
@@ -168,6 +169,8 @@ void getRectangleWH(Figure f, double *w, double *h);
  */
 void getLineP(Figure f, double *x1, double *y1, double *x2, double *y2);
 
+void getTextP(Figure f, double *x1, double *y1, double *x2, double *y2);
+
 /**
  * @brief Obtém o caractere de âncora de um texto.
  * @param f A figura (deve ser do tipo TEXT).
@@ -181,6 +184,12 @@ char getTextA(Figure f);
  * @param txt Buffer de destino para o texto (deve ter tamanho 64).
  */
 void getTextTXT(Figure f, char *txt);
+
+void getTextWgt(Figure f, char *wgt);
+
+void getTextFml(Figure f, char *fml);
+
+int getTextSize(Figure f);
 
 /**
  * @brief Define as cores de uma figura.
@@ -199,4 +208,5 @@ void putFigureColor(Figure f, const char *colorB, const char *colorF);
  */
 int getFigureShape(Figure f);
 
+int getFigureType(Figure f);
 #endif
