@@ -1,5 +1,5 @@
 PROJ_NAME=ted
-ALUNO=
+ALUNO= José Henrique Gonçalves Rodrigues
 LIBS=-lm
 
 OBJETOS= main.o geo.o qry.o figure.o collision.o queue.o stack.o svg.o
