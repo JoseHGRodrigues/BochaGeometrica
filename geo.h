@@ -6,15 +6,8 @@
 /**
  * @brief Processa um arquivo .geo, lendo as figuras e as adicionando
  * a uma lista.
- *
- * Esta função abre o arquivo .geo, lê cada linha (c, r, l, t)
- *, cria a figura correspondente (usando 'figure.h') e
- * a insere no final da 'figureList' (usando 'list.h').
- *
  * @param geoFilePath O caminho completo para o arquivo .geo a ser lido
- * (ex: "./t-2figs-alet.geo").
- * @param figureList A lista (já inicializada com listInit) onde as
- * figuras criadas serão armazenadas.
+ * @param figureList A Queue onde as figures criadas serão armazenadas.
  */
 void processGeoFile(const char *geoFilePath, Queue figureList);
 
