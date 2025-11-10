@@ -207,6 +207,7 @@ void getTextFml(Figure f, char *fml);
  * @brief Obtem o size da fonte do TEXT.
  * @param f A figure.
  * @return um inteiro que é o tamamanho da fonte.
+ */
 int getTextSize(Figure f);
 
 /**
