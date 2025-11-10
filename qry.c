@@ -74,12 +74,17 @@ static void gameFree(Game *g) {
       Figure f = stackPop(g->m[i]);
       figureFree(f);
     }
-    stackFree(g->m[i]);
+    stackFree(g->m[i]->st);
+    free(g->m[i]);
   }
+  free(g->m);
   for (int i = 0; i < g->lent; i++) {
     figureFree(g->t[i]->onTrigger);
     free(g->t[i]);
   }
+  free(g->t);
+  queueFree(g->arena);
+  free(g);
 }
 
 static Trigger *triggerInit() {
@@ -150,10 +155,9 @@ static void gameAddMag(Game *g, Mag *m) {
 static void processPd(Game *g, const char *params) {
   int id;
   double x, y;
-  if (sscanf(params, "%d %lf %lf", &id, &x, &y) != 3) {
-    printf("%d\n", sscanf(params, "%d %lf %lf", &id, &x, &y));
+  if (sscanf(params, "%d %lf %lf", &id, &x, &y) != 3)
     return;
-  }
+
   Trigger *t = triggerFind(g, id);
   if (!t) {
     t = triggerInit();
@@ -244,6 +248,7 @@ static void processLc(Game *g, const char *params) {
   if (!m) {
     m = magInit();
     m->id = id;
+    gameAddMag(g, m);
   }
   fprintf(g->txt, "LC: Carregador %d\n", id);
   for (int i = 0; i < n; i++) {
@@ -253,8 +258,6 @@ static void processLc(Game *g, const char *params) {
     stackPush(m->st, f);
     txtFigInfo(g->txt, f);
   }
-  printf("stack: %d\n", stackGetSize(m->st));
-  gameAddMag(g, m);
 }
 
 static void processAtch(Game *g, const char *params) {
@@ -269,12 +272,16 @@ static void processAtch(Game *g, const char *params) {
     ml = magInit();
     if (!ml)
       return;
+    ml->id = mlid;
+    gameAddMag(g, ml);
   }
   Mag *mr = magFind(g, mrid);
   if (!mr) {
     mr = magInit();
     if (!mr)
       return;
+    mr->id = mrid;
+    gameAddMag(g, mr);
   }
   t->left = ml;
   t->right = mr;
@@ -283,20 +290,20 @@ static void processShft(Game *g, const char *params) {
   int tid, n;
   char d;
   if (sscanf(params, "%d %c %d", &tid, &d, &n) != 3)
-    exit(EXIT_FAILURE);
+    return;
   Trigger *t = triggerFind(g, tid);
   if (!t)
-    exit(EXIT_FAILURE);
+    return;
   if (d != 'e' && d != 'd')
-    exit(EXIT_FAILURE);
+    return;
   if (n < 1)
-    exit(EXIT_FAILURE);
+    return;
   Stack from = (d == 'e') ? t->left->st : t->right->st;
   Stack to = (d == 'e') ? t->right->st : t->left->st;
   for (int i = 0; i < n; i++) {
     Figure figMove = stackPop(from);
     if (!figMove)
-      exit(EXIT_FAILURE);
+      return;
     if (t->onTrigger)
       stackPush(to, t->onTrigger);
     t->onTrigger = figMove;
@@ -317,10 +324,6 @@ static void processDsp(Game *g, const char *params) {
 
   if (!t->onTrigger)
     return;
-
-  printf("%d", getFigureId(t->onTrigger));
-
-  printf("\tt\n");
   fMoveTo(t->onTrigger, t->x + dx, t->y + dy);
   queueEnqueue(g->arena, t->onTrigger);
   fprintf(g->txt, "DSP: Disparador %d\n", tid);
@@ -354,8 +357,6 @@ static void processRjd(Game *g, char *params) {
   Stack from = (d == 'e') ? t->left->st : t->right->st;
   int i = 1;
   fprintf(g->txt, "RJD: Disparador %d\n", tid);
-  printf("right: %d\n", stackGetSize(t->right->st));
-  printf("left: %d\n", stackGetSize(t->left->st));
   if (t->onTrigger != NULL) {
     txtFigInfo(g->txt, t->onTrigger);
     fMoveTo(t->onTrigger, t->x + dx + i * ix, t->y + dy + i * iy);
@@ -363,8 +364,6 @@ static void processRjd(Game *g, char *params) {
     g->totalSho++;
     i++;
   }
-  printf("from: %d\n", stackGetSize(from));
-  printf("não passou\n");
   while (!stackIsEmpty(from)) {
     t->onTrigger = stackPop(from);
     printf("passou\n");
@@ -387,27 +386,20 @@ static void processCalc(Game *g) {
   fprintf(g->txt, "CALC\n");
   while (!queueIsEmpty(g->arena)) {
     areaR = 0;
-    printf("\tentrou no while\n");
     int maior, menor;
     f1 = queueDequeue(g->arena);
-    if (!f1) {
-      printf("\t!f1");
+    if (!f1)
       return;
-    }
-    printf("\tf1\n");
     f2 = queueDequeue(g->arena);
     if (!f2) {
       queueEnqueue(g->ground, f1);
       return;
     }
-    printf("\tf2\n");
     if (!figuresOverlap(f1, f2)) {
-      printf("\tnao tem overlap\n");
       queueEnqueue(g->ground, f1);
       queueEnqueue(g->ground, f2);
       continue;
     }
-    printf("\ttem overlap\n");
     double area1 = figureArea(f1);
     double area2 = figureArea(f2);
     double x, y;
@@ -453,7 +445,6 @@ static void processQryLine(Game *g, const char *line) {
   memset(params, 0, sizeof(params));
 
   sscanf(line, "%5s %505[^\n]", command, params);
-  printf("Command: %s\n", command);
   if (!strcmp(command, "pd")) {
     processPd(g, params);
     g->totalIns++;
@@ -482,21 +473,17 @@ void processQryFile(Queue ground, const char *qryPath, FILE *txtFile,
                     FILE *svgFile) {
   if (queueIsEmpty(ground))
     return;
-  printf("ground");
   Game *game = gameInit();
   game->ground = ground;
-  printf(qryPath);
   FILE *qryFile = fopen(qryPath, "r");
   if (!qryFile)
     return;
-  printf("qryFile");
 
   game->svg = svgFile;
   if (!game->svg) {
     fclose(qryFile);
     return;
   }
-  printf("svgFile");
 
   game->txt = txtFile;
   if (!game->txt) {

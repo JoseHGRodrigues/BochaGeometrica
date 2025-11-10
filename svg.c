@@ -10,10 +10,10 @@ static void svgDrawCircle(FILE *svgFile, Figure f) {
   double x, y;
   getFigureColors(f, colorB, colorF);
   getFigureXY(&x, &y, f);
-  fprintf(
-      svgFile,
-      "\t<circle cx=\"%lf\" cy=\"%lf\" r=\"%lf\"stroke=\"%s\" fill=\"%s\" />\n",
-      x, y, getCircleR(f), colorB, colorF);
+  fprintf(svgFile,
+          "\t<circle cx=\"%lf\" cy=\"%lf\" r=\"%lf\" stroke=\"%s\" fill=\"%s\" "
+          "/>\n",
+          x, y, getCircleR(f), colorB, colorF);
 }
 
 static void svgDrawRectangle(FILE *svgFile, Figure f) {
