@@ -366,7 +366,6 @@ static void processRjd(Game *g, char *params) {
   }
   while (!stackIsEmpty(from)) {
     t->onTrigger = stackPop(from);
-    printf("passou\n");
     if (!t->onTrigger)
       break;
 
