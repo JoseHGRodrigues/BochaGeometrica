@@ -67,9 +67,10 @@ static void svgDrawText(FILE *svgFile, Figure f) {
     strcpy(svgWeight, "normal");
   fprintf(
       svgFile,
-      "\t<text x=\"%lf\" y=\"%lf\" fill=\"%s\" text-anchor=\"%s\" "
+      "\t<text x=\"%lf\" y=\"%lf\" fill=\"%s\" stroke=\"%s\" "
+      "text-anchor=\"%s\" "
       "font-family=\"%s\" font-size=\"%d\" font-weight=\"%s\"> %s</text>\n ",
-      x, y, colorF, anchorStr, family, size, svgWeight, txt);
+      x, y, colorF, colorB, anchorStr, family, size, svgWeight, txt);
 }
 
 void svgInit(FILE *svgFile) {

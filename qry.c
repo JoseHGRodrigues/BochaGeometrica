@@ -70,8 +70,8 @@ static Game *gameInit() {
 
 static void gameFree(Game *g) {
   for (int i = 0; i < g->lenm; i++) {
-    while (!stackIsEmpty(g->m[i])) {
-      Figure f = stackPop(g->m[i]);
+    while (!stackIsEmpty(g->m[i]->st)) {
+      Figure f = stackPop(g->m[i]->st);
       figureFree(f);
     }
     stackFree(g->m[i]->st);
